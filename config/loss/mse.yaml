@@ -1,0 +1,3 @@
+- name: torch.nn.MSELoss
+  weight: 1
+  args:

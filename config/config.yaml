@@ -1,0 +1,36 @@
+defaults:
+  - _self_
+  - dataset: imagenet
+  - loss: mse
+  - encoder: resnet
+  - decoder: resnet
+  - optimizer: adam
+  - scheduler: cosine_annealing
+  - transform: default
+  - override hydra/job_logging: colorlog
+  - override hydra/hydra_logging: colorlog
+
+experience: 
+  logs_dir: runs
+  experiment_name: basic_autoencoder
+  exp_dir: ${experience.logs_dir}/${experience.experiment_name}
+
+  seed: 42
+  data_dir: ./data
+  pretrained_weights: 
+  clip_value:
+
+  device: cuda:0
+  n_epochs: 10
+  batch_size: 32
+  n_workers: 4
+  use_amp: true
+
+  quantize_level: 2
+
+hydra:
+  run:
+    dir: ${experience.logs_dir}/${experience.experiment_name}/outputs
+  sweep:
+    dir: ${experience.logs_dir}
+    subdir: ${experience.experiment_name}/outputs

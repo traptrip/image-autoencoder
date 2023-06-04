@@ -1,0 +1,6 @@
+name: torch.optim.lr_scheduler.CosineAnnealingLR
+args:
+  T_max: ${experience.n_epochs}
+  eta_min: 0.0000001
+  last_epoch: -1
+  verbose: false
