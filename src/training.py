@@ -189,7 +189,7 @@ class Trainer:
                     "loss": best_loss,
                     "encoder": self.net.encoder.state_dict(),
                     "decoder": self.net.decoder.state_dict(),
-                    "criterion_state": self.criterion.state_dict(),
+                    "criterion_state": [c[0].state_dict() for c in self.criterion],
                     "optimizer_state": self.optimizer.state_dict(),
                     "scheduler_state": self.scheduler.state_dict()
                     if self.scheduler is not None
@@ -207,7 +207,7 @@ class Trainer:
                 "loss": eval_loss,
                 "encoder": self.net.encoder.state_dict(),
                 "decoder": self.net.decoder.state_dict(),
-                "criterion_state": self.criterion.state_dict(),
+                "criterion_state": [c[0].state_dict() for c in self.criterion],
                 "optimizer_state": self.optimizer.state_dict(),
                 "scheduler_state": self.scheduler.state_dict()
                 if self.scheduler is not None
