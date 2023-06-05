@@ -143,7 +143,7 @@ class Trainer:
                     images = images.to(self.device)
                     targets = targets.to(self.device)
                     output = self.net(images)
-                    loss = sum(c(output, images) for c in self.criterion)
+                    loss = sum(c[0](output, images) * c[1] for c in self.criterion)
 
                 result_loss += loss.item()
 
