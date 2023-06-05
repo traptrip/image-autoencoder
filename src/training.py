@@ -78,6 +78,8 @@ class Trainer:
             num_workers=self.n_workers,
             pin_memory=True,
         )
+        self.train_steps = len(train_loader)
+        self.eval_steps = len(eval_loader)
 
         return train_loader, eval_loader
 
@@ -141,9 +143,7 @@ class Trainer:
                     images = images.to(self.device)
                     targets = targets.to(self.device)
                     output = self.net(images)
-                    loss = sum(
-                        c(output, images) for c in self.criterion(output, images)
-                    )
+                    loss = sum(c(output, images) for c in self.criterion)
 
                 result_loss += loss.item()
 
