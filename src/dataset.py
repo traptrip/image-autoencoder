@@ -28,7 +28,7 @@ class ImageNet(Dataset):
         # leave only N images per class
         filtered_meta = []
         for s in ["train", "val"]:
-            n = 5 if s == "val" else 10
+            n = 5 if s == "val" else 100
             m = self.meta.loc[self.meta.stage == s]
             for t in m.target.unique():
                 t_meta = m.loc[m.target == t]

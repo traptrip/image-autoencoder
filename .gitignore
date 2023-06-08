@@ -164,4 +164,7 @@ cython_debug/
 ILSVRC/
 *.txt
 runs/
+*.pt
 *.pth
+*.npz
+

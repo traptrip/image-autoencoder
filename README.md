@@ -4,12 +4,12 @@
 
 ## Encode image
 ```bash
-python main.py encode -m <model_path> -src <path/to/image> -dsc <path/to/latent/vector>
+python main.py encode -m <model_path> -src <path/to/image> -dsc <path/to/latent/vector> -q <quantization_level>
 ```
 
 ## Decode image
 ```bash
-python main.py decode -m <model_path> -src <path/to/latent/vector> -dsc <path/to/image>
+python main.py decode -m <model_path> -src <path/to/latent/vector> -dsc <path/to/image> -q <quantization_level>
 ```
 
 # Training
