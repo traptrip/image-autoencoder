@@ -8,7 +8,7 @@ import omegaconf
 from torchvision import transforms
 from omegaconf import DictConfig
 
-from src.net import AutoEncoder
+from src.net import AutoEncoder, Encoder, Decoder
 
 
 def set_seed(seed=42):
@@ -62,8 +62,8 @@ def get_model(
     quantize_level: int,
     pretrained_weights=None,
 ):
-    encoder = load_obj(encoder_cfg.name)()
-    decoder = load_obj(decoder_cfg.name)()
+    encoder = Encoder(encoder_cfg)
+    decoder = Decoder(decoder_cfg)
     net = AutoEncoder(encoder, decoder, quantize_level)
     if pretrained_weights is not None:
         weights = torch.load(pretrained_weights, map_location="cpu")

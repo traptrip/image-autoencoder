@@ -1,2 +1,2 @@
-name: src.net.Encoder
+name: src.encoders.resnet.ResNet18Encoder
 args:

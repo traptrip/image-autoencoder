@@ -1,2 +1,3 @@
-name: src.net.Decoder
+name: src.decoders.resnet.Decoder
 args:
+  in_channels: 512

@@ -12,48 +12,63 @@ MEAN = 0.485, 0.456, 0.406
 STD = 0.229, 0.224, 0.225
 to_tensor = transforms.Compose([transforms.ToTensor(), transforms.Normalize(MEAN, STD)])
 to_pil = transforms.ToPILImage()
+encoder = Encoder()
+decoder = Decoder()
 
 
 @torch.inference_mode()
-def callback_encode(args):
-    model = Encoder()
-    weights = torch.load(args.weights_path, map_location="cpu")["encoder"]
-    model.load_state_dict(weights)
-    model.to(args.device)
-    model.eval()
+def encode(
+    weights_path: str, input_path: str, output_path: str, q_level: int, device: str
+):
+    weights = torch.load(weights_path, map_location="cpu")["encoder"]
+    encoder.load_state_dict(weights)
+    encoder.to(device)
+    encoder.eval()
 
-    image = Image.open(args.input_path)
-    input = to_tensor(image)[None].to(args.device)
-    output = model(input).cpu()
+    image = Image.open(input_path)
+    input = to_tensor(image)[None].to(device)
+    output = encoder(input).cpu()
 
-    compressor = Compressor(args.q_level)
+    compressor = Compressor(q_level)
     q_embedding, shape = compressor.compress(output)
-    np.savez_compressed(args.output_path, emb=q_embedding, shape=shape)
+    np.savez_compressed(output_path, emb=q_embedding, shape=shape)
+
+
+def callback_encode(args):
+    encode(
+        args.weights_path, args.input_path, args.output_path, args.q_level, args.device
+    )
 
 
 @torch.inference_mode()
-def callback_decode(args):
-    model = Decoder()
-    weights = torch.load(args.weights_path, map_location="cpu")["decoder"]
-    model.load_state_dict(weights)
-    model.to(args.device)
-    model.eval()
+def decode(
+    weights_path: str, input_path: str, output_path: str, q_level: int, device: str
+):
+    weights = torch.load(weights_path, map_location="cpu")["decoder"]
+    decoder.load_state_dict(weights)
+    decoder.to(device)
+    decoder.eval()
 
-    compressor = Compressor(args.q_level)
-    inputs = np.load(args.input_path)
+    compressor = Compressor(q_level)
+    inputs = np.load(input_path)
     embedding = compressor.decompress(**inputs)
-    embedding = embedding.to(args.device)
+    embedding = embedding.to(device)
 
-    output = model(embedding).cpu().numpy()[0]
+    output = decoder(embedding).cpu().numpy()[0]
     output = output.transpose(1, 2, 0)
     output = (output * 255 / output.max()).astype(np.uint8)
     image = Image.fromarray(output)
-    image.save(args.output_path)
+    image.save(output_path)
+
+
+def callback_decode(args):
+    decode(
+        args.weights_path, args.input_path, args.output_path, args.q_level, args.device
+    )
 
 
 def setup_parser(parser: ArgumentParser):
     """Setup arguments parser for CLI"""
-    parser.add_argument("-d", "--device", help="device to execute model", default="cpu")
     subparsers = parser.add_subparsers(help="Choose command")
 
     encoder_parser = subparsers.add_parser(
@@ -84,7 +99,9 @@ def setup_parser(parser: ArgumentParser):
         type=int,
         default=2,
     )
-
+    encoder_parser.add_argument(
+        "-d", "--device", help="device to execute model", default="cpu"
+    )
     encoder_parser.set_defaults(callback=callback_encode)
 
     decoder_parser = subparsers.add_parser(
@@ -115,7 +132,9 @@ def setup_parser(parser: ArgumentParser):
         type=int,
         default=2,
     )
-
+    decoder_parser.add_argument(
+        "-d", "--device", help="device to execute model", default="cpu"
+    )
     decoder_parser.set_defaults(callback=callback_decode)
 
 

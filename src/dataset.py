@@ -28,7 +28,7 @@ class ImageNet(Dataset):
         # leave only N images per class
         filtered_meta = []
         for s in ["train", "val"]:
-            n = 5 if s == "val" else 100
+            n = 5 if s == "val" else 10
             m = self.meta.loc[self.meta.stage == s]
             for t in m.target.unique():
                 t_meta = m.loc[m.target == t]
@@ -39,7 +39,11 @@ class ImageNet(Dataset):
         # get stage metadata
         self.meta = self.meta.loc[self.meta.stage == stage].reset_index(drop=True)
         self.paths = [
-            self.root / "ILSVRC/Data/CLS-LOC" / stage / (p.split("_")[0] if stage == "train" else ".") / f"{p}.JPEG"
+            self.root
+            / "ILSVRC/Data/CLS-LOC"
+            / stage
+            / (p.split("_")[0] if stage == "train" else ".")
+            / f"{p}.JPEG"
             for p in self.meta["ImageId"]
         ]
         self.targets = [self.label2id[t] for t in self.meta.target]
