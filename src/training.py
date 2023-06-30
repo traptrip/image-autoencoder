@@ -9,6 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm.auto import tqdm
 
 from src import utils
+from src.net import get_model
 
 
 class Trainer:
@@ -27,7 +28,7 @@ class Trainer:
         self.exp_dir = Path(config.experience.exp_dir)
 
         # training params
-        self.net = utils.get_model(
+        self.net = get_model(
             config.encoder,
             config.decoder,
             config.experience.quantize_level,
@@ -55,6 +56,10 @@ class Trainer:
         )
 
         self.net.to(self.device)
+
+        self.max_train_steps = config.experience.max_train_steps if config.experience.max_train_steps else float("inf")
+        self.max_test_steps = config.experience.max_test_steps if config.experience.max_test_steps else float("inf")
+
 
     def _get_dataloaders(self) -> tuple[DataLoader, DataLoader]:
         train_dataset = utils.load_obj(self.dataset.name)(
@@ -93,8 +98,11 @@ class Trainer:
         # train step
         result_loss = 0
 
-        pbar = tqdm(data_loader)
+        pbar = tqdm(data_loader, total=min(self.max_train_steps, len(data_loader)))
         for bid, (images, targets) in enumerate(pbar):
+            if bid >= self.max_train_steps:
+                break
+
             with torch.autocast(device_type=self.device.type, enabled=self.use_amp):
                 images = images.to(self.device)
                 targets = targets.to(self.device)
@@ -124,7 +132,7 @@ class Trainer:
             pbar.set_description(f"Epoch: {epoch}")
             pbar.set_postfix_str(f"Train Loss: {(result_loss / (bid + 1)):.6f}")
 
-        result_loss /= self.train_steps
+        result_loss /= min(self.train_steps, self.max_train_steps)
 
         return result_loss
 
@@ -137,8 +145,10 @@ class Trainer:
 
         with torch.no_grad():
             result_loss = 0
-            pbar = tqdm(data_loader)
+            pbar = tqdm(data_loader, total=min(self.max_test_steps, len(data_loader)))
             for bid, (images, targets) in enumerate(pbar):
+                if bid >= self.max_test_steps:
+                    break
                 with torch.autocast(device_type=self.device.type, enabled=self.use_amp):
                     images = images.to(self.device)
                     targets = targets.to(self.device)
@@ -150,7 +160,7 @@ class Trainer:
                 pbar.set_description(f"Epoch {epoch}")
                 pbar.set_postfix_str(f"Test Loss: {(result_loss / (bid + 1)):.6f}")
 
-            result_loss /= self.eval_steps
+            result_loss /= min(self.eval_steps, self.max_test_steps)
 
         return result_loss
 
@@ -195,10 +205,10 @@ class Trainer:
                     if self.scheduler is not None
                     else None,
                 }
-                scripted = torch.jit.trace(
-                    self.net, train_loader.dataset[0][0].unsqueeze(0).to(self.device)
-                )
-                torch.jit.save(scripted, self.exp_dir / "best_model.torchscript")
+                # scripted = torch.jit.trace(
+                #     self.net, train_loader.dataset[0][0].unsqueeze(0).to(self.device)
+                # )
+                # torch.jit.save(scripted, self.exp_dir / "best_model.torchscript")
                 torch.save(checkpoint, self.exp_dir / "best_checkpoint.pth")
 
             # save last
@@ -214,10 +224,10 @@ class Trainer:
                 else None,
             }
 
-            scripted = torch.jit.trace(
-                self.net, train_loader.dataset[0][0].unsqueeze(0).to(self.device)
-            )
-            torch.jit.save(scripted, self.exp_dir / "last_model.torchscript")
+            # scripted = torch.jit.trace(
+            #     self.net, train_loader.dataset[0][0].unsqueeze(0).to(self.device)
+            # )
+            # torch.jit.save(scripted, self.exp_dir / "last_model.torchscript")
             torch.save(checkpoint, self.exp_dir / "last_checkpoint.pth")
 
             epoch += 1

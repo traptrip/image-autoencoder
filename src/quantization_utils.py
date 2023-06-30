@@ -19,16 +19,15 @@ class Compressor:
     def compress(self, embedding: torch.Tensor) -> tuple[list[int], list[int]]:
         shape = list(embedding.shape)
         embedding = embedding.flatten()
-        embedding = (embedding * (2**self.q_level) + 0.5).to(torch.int64)
+        embedding = (embedding * (2**self.q_level) + 0.5).to(torch.int32)
         embedding = embedding.tolist()
-        encoded = self.compressor.compress(embedding)
-        return encoded, shape
+        embedding = self.compressor.compress(embedding)
+        return embedding, shape
 
     def decompress(self, emb: list[int], shape: list[int]) -> torch.Tensor:
         length = np.prod(shape)
-        decoded = self.compressor.decompress(emb, length)
-        # decoded = np.fromiter(map(int, decoded), dtype=np.int64)
-        decoded = torch.tensor(decoded).float()
-        decoded = decoded / (2**self.q_level)
-        decoded = decoded.view(*shape)
-        return decoded
+        emb = self.compressor.decompress(emb, length)
+        embedding = torch.tensor(emb).float()
+        embedding = embedding / (2**self.q_level)
+        embedding = embedding.view(*shape)
+        return embedding

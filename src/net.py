@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+from omegaconf import DictConfig
+
 from src import utils
 
 
@@ -50,3 +52,18 @@ class AutoEncoder(nn.Module):
         x = self.decoder(x)
 
         return x
+
+
+def get_model(
+    encoder_cfg: DictConfig,
+    decoder_cfg: DictConfig,
+    quantize_level: int,
+    pretrained_weights=None,
+):
+    encoder = Encoder(encoder_cfg)
+    decoder = Decoder(decoder_cfg)
+    net = AutoEncoder(encoder, decoder, quantize_level)
+    if pretrained_weights is not None:
+        weights = torch.load(pretrained_weights, map_location="cpu")
+        net.load_state_dict(weights)
+    return net

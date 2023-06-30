@@ -8,8 +8,6 @@ import omegaconf
 from torchvision import transforms
 from omegaconf import DictConfig
 
-from src.net import AutoEncoder, Encoder, Decoder
-
 
 def set_seed(seed=42):
     """Sets the seed of the entire notebook so results are the same every time we run.
@@ -54,21 +52,6 @@ def get_transform(
         transforms_list.append(getattr(transforms, t_name)(**t_params))
     transform = transforms.Compose(transforms_list)
     return transform
-
-
-def get_model(
-    encoder_cfg: DictConfig,
-    decoder_cfg: DictConfig,
-    quantize_level: int,
-    pretrained_weights=None,
-):
-    encoder = Encoder(encoder_cfg)
-    decoder = Decoder(decoder_cfg)
-    net = AutoEncoder(encoder, decoder, quantize_level)
-    if pretrained_weights is not None:
-        weights = torch.load(pretrained_weights, map_location="cpu")
-        net.load_state_dict(weights)
-    return net
 
 
 def get_criterion(criterion_cfg: DictConfig):

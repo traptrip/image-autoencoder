@@ -10,10 +10,19 @@ from src.quantization_utils import Compressor
 
 MEAN = 0.485, 0.456, 0.406
 STD = 0.229, 0.224, 0.225
+# MEAN = 0.5, 0.5, 0.5
+# STD = 0.5, 0.5, 0.5
+
 to_tensor = transforms.Compose([transforms.ToTensor(), transforms.Normalize(MEAN, STD)])
 to_pil = transforms.ToPILImage()
-encoder = Encoder()
-decoder = Decoder()
+# encoder = Encoder({"name": "src.encoders.resnet.ResNet18Encoder", "args": None})
+# decoder = Decoder(
+#     {"name": "src.decoders.resnet.ResNet18Decoder", "args": {"in_channels": 512}}
+# )
+encoder = Encoder({"name": "src.encoders.basic.Encoder", "args": None})
+decoder = Decoder({"name": "src.decoders.basic.BasicDecoder", "args": None})
+# encoder = Encoder({"name": "src.encoders.vit.Encoder", "args": None})
+# decoder = Decoder({"name": "src.decoders.basic.ViTDecoder", "args": None})
 
 
 @torch.inference_mode()
@@ -28,6 +37,8 @@ def encode(
     image = Image.open(input_path)
     input = to_tensor(image)[None].to(device)
     output = encoder(input).cpu()
+
+    # np.savez_compressed(output_path, emb=output.numpy(), shape=output.numpy().shape)
 
     compressor = Compressor(q_level)
     q_embedding, shape = compressor.compress(output)
@@ -51,12 +62,15 @@ def decode(
 
     compressor = Compressor(q_level)
     inputs = np.load(input_path)
+
     embedding = compressor.decompress(**inputs)
+    # embedding = torch.tensor(inputs["emb"])
+
     embedding = embedding.to(device)
 
     output = decoder(embedding).cpu().numpy()[0]
     output = output.transpose(1, 2, 0)
-    output = (output * 255 / output.max()).astype(np.uint8)
+    output = (output * 255).astype(np.uint8)
     image = Image.fromarray(output)
     image.save(output_path)
 

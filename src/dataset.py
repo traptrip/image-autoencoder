@@ -25,17 +25,6 @@ class ImageNet(Dataset):
             label: i for i, label in enumerate(sorted(self.meta.target.unique()))
         }
 
-        # leave only N images per class
-        filtered_meta = []
-        for s in ["train", "val"]:
-            n = 5 if s == "val" else 10
-            m = self.meta.loc[self.meta.stage == s]
-            for t in m.target.unique():
-                t_meta = m.loc[m.target == t]
-                filtered_meta.append(t_meta.iloc[:n])
-
-        self.meta = pd.concat(filtered_meta, axis=0, ignore_index=True)
-
         # get stage metadata
         self.meta = self.meta.loc[self.meta.stage == stage].reset_index(drop=True)
         self.paths = [
@@ -47,6 +36,46 @@ class ImageNet(Dataset):
             for p in self.meta["ImageId"]
         ]
         self.targets = [self.label2id[t] for t in self.meta.target]
+
+        self.transform = transform
+
+    def __getitem__(self, idx) -> Any:
+        image = Image.open(self.paths[idx]).convert("RGB")
+        target = self.targets[idx]
+
+        if self.transform:
+            image = self.transform(image)
+
+        return image, target
+
+    def __len__(self):
+        return len(self.paths)
+
+
+class ImageFolder(Dataset):
+    def __init__(self, root: str, stage: str, transform=None) -> None:
+        super().__init__()
+        self.root = Path(root)
+        self.stage = stage
+        assert stage in ["train", "val"]
+
+        self.meta = pd.read_csv(self.root / f"train.csv")
+        self.meta.loc[:, "stage"] = "train"
+        self.meta_val = self.meta.copy()
+        for label in self.meta.label.unique():
+            d = self.meta.loc[self.meta.label == label]
+            val_idxs = d.index.tolist()[: int(len(d) * 0.1)]
+            self.meta.loc[val_idxs, "stage"] = "val"
+
+        # get classes
+        self.label2id = {
+            label: i for i, label in enumerate(sorted(self.meta.label.unique()))
+        }
+
+        # get stage metadata
+        self.meta = self.meta.loc[self.meta.stage == stage].reset_index(drop=True)
+        self.paths = [self.root / row[1] / row[0] for _, row in self.meta.iterrows()]
+        self.targets = [self.label2id[t] for t in self.meta.label]
 
         self.transform = transform
 

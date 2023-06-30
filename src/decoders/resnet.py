@@ -50,7 +50,7 @@ class ResidualUpsampleBlock(nn.Module):
         return out + res
 
 
-class Decoder(nn.Module):
+class ResNet18Decoder(nn.Module):
     def __init__(self, in_channels):
         super().__init__()
         self.in_channel = in_channels
