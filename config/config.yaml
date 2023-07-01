@@ -1,9 +1,9 @@
 defaults:
   - _self_
-  - dataset: imagenet
+  - dataset: image_folder
   - loss: mse
-  - encoder: cae_32x32x32_zero_pad
-  - decoder: cae_32x32x32_zero_pad
+  - encoder: basic
+  - decoder: basic
   - optimizer: adam
   - scheduler: cosine_annealing
   - transform: default
@@ -12,7 +12,7 @@ defaults:
 
 experience: 
   logs_dir: runs
-  experiment_name: cae32x32x32
+  experiment_name: ???
   exp_dir: ${experience.logs_dir}/${experience.experiment_name}
 
   seed: 42
@@ -21,12 +21,15 @@ experience:
   clip_value:
 
   device: cuda:0
-  n_epochs: 2
-  batch_size: 8
+  n_epochs: 10
+  batch_size: 32
   n_workers: 4
   use_amp: true
 
-  quantize_level: 2
+  quantize_level: 8
+
+  max_train_steps:
+  max_test_steps:
 
 hydra:
   run:

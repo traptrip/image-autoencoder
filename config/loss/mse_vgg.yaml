@@ -1,7 +1,8 @@
 - name: torch.nn.MSELoss
-  weight: 0.5
+  weight: 0.65
   args:
 
 - name: src.losses.VGGLoss
-  weight: 0.5
+  weight: 0.35
   args:
+    device: ${experience.device}

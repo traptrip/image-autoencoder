@@ -1,2 +1,2 @@
-name: src.decoders.basic.Decoder
+name: src.decoders.basic.BasicDecoder
 args:

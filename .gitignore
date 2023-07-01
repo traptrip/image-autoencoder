@@ -162,9 +162,10 @@ cython_debug/
 *.csv
 *.zip
 ILSVRC/
-*.txt
 runs/
 *.pt
 *.pth
 *.npz
-
+data/universal_image_dataset/**/*.jpg
+data/universal_image_dataset/**/*.jpeg
+data/universal_image_dataset/**/*.png
