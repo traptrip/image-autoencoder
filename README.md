@@ -1,4 +1,4 @@
-# nn-image-compression
+# AutoEncoder image compression
 
 # Inference
 
@@ -16,7 +16,9 @@ python main.py decode -m <model_path> -src <path/to/latent/vector> -dsc <path/to
 ## Prepare dataset
 To train from scratch you need to download imagenet dataset from kaggle
 1. Go to [competition page](https://www.kaggle.com/competitions/imagenet-object-localization-challenge/overview) and accept its rules
-2. run `cd data && sh download_imagenet.sh`
+2. run one of
+    - `cd data/imagenet && sh download_dataset.sh`
+    - `cd data/universal_image_dataset && sh download_dataset.sh`
 
 If you have problems using kaggle api check https://www.kaggle.com/docs/api. 
 
@@ -27,10 +29,9 @@ If you have problems using kaggle api check https://www.kaggle.com/docs/api.
 ```python
 python train.py
 ```
-Training logs will be saved in `runs/basic_autoencoder` directory by default
+By default training logs will be saved in `runs/basic_autoencoder` directory by default
 
 To see the training plots use tensorboard
-
 ```
-tensorboard --logdir <path/to/experiments/directory>
+tensorboard --logdir runs/
 ```

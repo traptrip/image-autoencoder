@@ -2,8 +2,8 @@ defaults:
   - _self_
   - dataset: image_folder
   - loss: mse
-  - encoder: basic
-  - decoder: basic
+  - encoder: resnet
+  - decoder: resnet
   - optimizer: adam
   - scheduler: cosine_annealing
   - transform: default
@@ -12,7 +12,7 @@ defaults:
 
 experience: 
   logs_dir: runs
-  experiment_name: ???
+  experiment_name: basic_autoencoder
   exp_dir: ${experience.logs_dir}/${experience.experiment_name}
 
   seed: 42
